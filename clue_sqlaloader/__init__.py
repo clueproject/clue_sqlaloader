@@ -9,28 +9,52 @@ import logging
 logger = logging.getLogger('clue_sqlaloader')
 
 
-class YamlParser(yaml.Loader):
-    pass
+class Reference(object):
+
+    def __init__(self, loader, refname):
+        self.__reference_loader__ = loader
+        self.__reference_refname__ = refname
+
+    @property
+    def __reference_obj__(self):
+        v = self.__reference_refname__.value
+        return self.__reference_loader__.references[v]
+
+    def __getattr__(self, k):
+        return getattr(self.__reference_obj__, k)
 
 
-def construct_yaml_str(self, node):
-    # Override the default string handling function
-    # to always return unicode objects
-    return self.construct_scalar(node)
-YamlParser.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+class Loader(yaml.Loader):
 
-
-class Loader(object):
-
-    resolve = staticmethod(zope.dottedname.resolve.resolve)
+    dotted = staticmethod(zope.dottedname.resolve.resolve)
     open = staticmethod(open)
 
     def __init__(self, session):
         self.session = session
+        self.yaml_constructors = dict(yaml.Loader.yaml_constructors)
+
+        self.yaml_constructors[u'tag:yaml.org,2002:str'] = \
+            self.construct_yaml_str
+        self.yaml_constructors[u'tag:yaml.org,2002:refname'] = \
+            self.construct_refname
+        self.yaml_constructors[u'tag:yaml.org,2002:ref'] = self.construct_ref
+
+        self.references = {}
+
+    def construct_yaml_str(self, loader, node):
+        # Override the default string handling function
+        # to always return unicode objects
+        return loader.construct_scalar(node)
+
+    def construct_refname(self, loader, node):
+        return node.value
+
+    def construct_ref(self, loader, node):
+        return Reference(self, node)
 
     def load_from_list(self, data):
         for record in data:
-            model = self.resolve(record['model'])
+            model = self.dotted(record['model'])
             fields = record.get('fields', {})
             obj = model(**fields)
             for fname, value in record.get('execute', {}).items():
@@ -43,10 +67,14 @@ class Loader(object):
                          (obj.__class__.__name__, ','.join(args)))
             self.session.add(obj)
 
+            refname = record.get('refname')
+            if refname:
+                self.references[refname] = obj
+
         self.session.flush()
 
     def load_from_yamls(self, s):
-        data = yaml.load(s, YamlParser)
+        data = yaml.load(s, self)
         return self.load_from_list(data)
 
     def load_from_yamlf(self, filename):
@@ -56,6 +84,10 @@ class Loader(object):
             return self.load_from_yamls(f)
         finally:
             f.close()
+
+    def __call__(self, s):
+        yaml.Loader.__init__(self, s)
+        return self
 
 
 class Main(object):

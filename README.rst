@@ -26,10 +26,15 @@ The typical way to use the loader from within Python is as follows::
 
 The format of the YAML should be similar to the following::
 
+  - model: mymodule.Group
+    refname: !!refname "admingroup"
+    fields:
+      name: admin
   - model: mymodule.User
     fields:
       username: testuser1
       email: user@hisplace.com
+      groups: [!!ref "admingroup"]
     execute:
       set_password: testuser1
 
