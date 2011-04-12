@@ -9,6 +9,17 @@ import logging
 logger = logging.getLogger('clue_sqlaloader')
 
 
+class YamlParser(yaml.Loader):
+    pass
+
+
+def construct_yaml_str(self, node):
+    # Override the default string handling function
+    # to always return unicode objects
+    return self.construct_scalar(node)
+YamlParser.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+
+
 class Loader(object):
 
     resolve = staticmethod(zope.dottedname.resolve.resolve)
@@ -35,7 +46,7 @@ class Loader(object):
         self.session.flush()
 
     def load_from_yamls(self, s):
-        data = yaml.load(s)
+        data = yaml.load(s, YamlParser)
         return self.load_from_list(data)
 
     def load_from_yamlf(self, filename):
