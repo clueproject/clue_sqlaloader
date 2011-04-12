@@ -26,12 +26,12 @@ The typical way to use the loader from within Python is as follows::
 
 The format of the YAML should be similar to the following::
 
-- model: mymodule.User
-  fields:
-    username: testuser1
-    email: user@hisplace.com
-  execute:
-    set_password: testuser1
+  - model: mymodule.User
+    fields:
+      username: testuser1
+      email: user@hisplace.com
+    execute:
+      set_password: testuser1
 
 The *model* and *fields* arguments are straightforward.  The *execute*
 argument will call the given function name on the newly created object
