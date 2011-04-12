@@ -24,6 +24,18 @@ The typical way to use the loader from within Python is as follows::
   loader = Loader(sqlalchemy_session)
   loader.load_from_yamlf('somefile.yaml')
 
+The format of the YAML should be similar to the following::
+
+- model: mymodule.User
+  fields:
+    username: testuser1
+    email: user@hisplace.com
+  execute:
+    set_password: testuser1
+
+The *model* and *fields* arguments are straightforward.  The *execute*
+argument will call the given function name on the newly created object
+with the given value.
 
 Credits
 =======
