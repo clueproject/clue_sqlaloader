@@ -45,4 +45,4 @@ with the given value.
 Credits
 =======
 
-Written and maintained by Rocky Burt <rocky@serverzen.com>
+Written and maintained by Rocky Burt <rocky AT serverzen DOT com>
