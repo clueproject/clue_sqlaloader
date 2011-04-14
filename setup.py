@@ -8,6 +8,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 requires = [
     'SQLAlchemy >= 0.6.1',
     'PyYAML',
+    'zope.dottedname',
     ]
 
 setup(name='clue_sqlaloader',
