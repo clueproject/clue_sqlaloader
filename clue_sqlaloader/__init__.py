@@ -16,12 +16,12 @@ class Reference(object):
         self.__reference_refname__ = refname
 
     @property
-    def __reference_obj__(self):
+    def __referenced_obj__(self):
         v = self.__reference_refname__.value
         return self.__reference_loader__.references[v]
 
     def __getattr__(self, k):
-        return getattr(self.__reference_obj__, k)
+        return getattr(self.__referenced_obj__, k)
 
     def __repr__(self):
         return '<Reference refname=%s>' % self.__reference_refname__.value
@@ -61,8 +61,8 @@ class Loader(yaml.Loader):
             fields = record.get('fields', {})
 
             for k, v in fields.items():
-                if isinstance(v, Reference):
-                    fields[k] = v.__reference_obj__
+                if hasattr(v, '__referenced_obj__'):
+                    fields[k] = v.__referenced_obj__
                     self.session.flush()
 
             obj = model(**fields)
