@@ -23,6 +23,9 @@ class Reference(object):
     def __getattr__(self, k):
         return getattr(self.__reference_obj__, k)
 
+    def __repr__(self):
+        return '<Reference refname=%s>' % self.__reference_refname__.value
+
 
 class Loader(yaml.Loader):
 
@@ -56,6 +59,12 @@ class Loader(yaml.Loader):
         for record in data:
             model = self.dotted(record['model'])
             fields = record.get('fields', {})
+
+            for k, v in fields.items():
+                if isinstance(v, Reference):
+                    fields[k] = v.__reference_obj__
+                    self.session.flush()
+
             obj = model(**fields)
             for fname, value in record.get('execute', {}).items():
                 f = getattr(obj, fname)
