@@ -1,8 +1,8 @@
 Changes
 =======
 
-0.1.1 (unreleased)
-------------------
+0.1.1 (Apr-21-2011)
+-------------------
 
   * Made Reference lookup a little more robust
 
